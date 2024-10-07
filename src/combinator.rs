@@ -38,13 +38,8 @@ impl<I: Clone, O, A: Parser<I, O, Error = E>, B: Parser<I, O, Error = E>, E: Err
         let a_res = debugger.invoke(&self.0, stream);
         let a_state = stream.save();
 
-        // If the first parser succeeded and produced no secondary errors, don't bother trying the second parser
-        // TODO: Perhaps we should *alwaus* take this route, even if recoverable errors did occur? Seems like an
-        // inconsistent application of PEG rules...
-        if a_res.0.is_empty() {
-            if let (a_errors, Ok(a_out)) = a_res {
-                return (a_errors, Ok(a_out));
-            }
+        if let (a_errors, Ok(a_out)) = a_res {
+            return (a_errors, Ok(a_out));
         }
 
         stream.revert(pre_state);
@@ -1343,7 +1338,7 @@ impl<I: Clone, O, A: Parser<I, O, Error = E>, F: Fn(E) -> Result<O, E>, E: Error
                 Ok(out) => {
                     stream.revert(start);
                     Ok((out, None))
-                },
+                }
             },
         };
 

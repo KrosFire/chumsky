@@ -330,10 +330,12 @@ impl<I: Clone + PartialEq, O, R: Parser<I, O, Error = E>, E: Error<I>> Strategy<
         debugger: &mut D,
         stream: &mut StreamOf<I, P::Error>,
     ) -> PResult<I, O, P::Error> {
-        a_errors.push(a_err);
+        let (_, res) = self.0.parse_inner(debugger, stream);
 
-        let (mut errors, res) = self.0.parse_inner(debugger, stream);
-        a_errors.append(&mut errors);
+        if res.is_ok() {
+            a_errors.push(a_err);
+        }
+
         (a_errors, res)
     }
 }

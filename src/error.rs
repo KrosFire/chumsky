@@ -67,7 +67,7 @@ use alloc::string::ToString;
 /// assert_eq!(numeral.parse("f").into_errors(), vec![MyError::NotADigit((0..1).into(), 'f')]);
 /// ```
 // TODO: Add support for more specialised kinds of error: unclosed delimiters, and more
-pub trait Error<'a, I: Input<'a>>: Sized {
+pub trait Error<'a, I: Input<'a>>: Sized + fmt::Debug {
     /// Create a new error describing a conflict between expected inputs and that which was actually found.
     ///
     /// `found` having the value `None` indicates that the end of input was reached, but was not expected.
@@ -147,17 +147,6 @@ impl<S> Cheap<S> {
     }
 }
 
-impl<'a, I: Input<'a>> Error<'a, I> for Cheap<I::Span> {
-    #[inline]
-    fn expected_found<E: IntoIterator<Item = Option<MaybeRef<'a, I::Token>>>>(
-        _expected: E,
-        _found: Option<MaybeRef<'a, I::Token>>,
-        span: I::Span,
-    ) -> Self {
-        Self { span }
-    }
-}
-
 impl<S> fmt::Debug for Cheap<S>
 where
     S: fmt::Debug,
@@ -165,6 +154,20 @@ where
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "at {:?}", self.span)?;
         Ok(())
+    }
+}
+
+impl<'a, I: Input<'a>> Error<'a, I> for Cheap<I::Span>
+where
+    <I as input::Input<'a>>::Span: fmt::Debug,
+{
+    #[inline]
+    fn expected_found<E: IntoIterator<Item = Option<MaybeRef<'a, I::Token>>>>(
+        _expected: E,
+        _found: Option<MaybeRef<'a, I::Token>>,
+        span: I::Span,
+    ) -> Self {
+        Self { span }
     }
 }
 
@@ -214,17 +217,6 @@ impl<'a, T, S> Simple<'a, T, S> {
     }
 }
 
-impl<'a, I: Input<'a>> Error<'a, I> for Simple<'a, I::Token, I::Span> {
-    #[inline]
-    fn expected_found<E: IntoIterator<Item = Option<MaybeRef<'a, I::Token>>>>(
-        _expected: E,
-        found: Option<MaybeRef<'a, I::Token>>,
-        span: I::Span,
-    ) -> Self {
-        Self { span, found }
-    }
-}
-
 impl<'a, T, S> fmt::Debug for Simple<'a, T, S>
 where
     T: fmt::Debug,
@@ -235,6 +227,21 @@ where
         write_token(f, T::fmt, self.found.as_deref())?;
         write!(f, " at {:?}", self.span)?;
         Ok(())
+    }
+}
+
+impl<'a, I: Input<'a>> Error<'a, I> for Simple<'a, I::Token, I::Span>
+where
+    <I as input::Input<'a>>::Token: fmt::Debug,
+    <I as input::Input<'a>>::Span: fmt::Debug,
+{
+    #[inline]
+    fn expected_found<E: IntoIterator<Item = Option<MaybeRef<'a, I::Token>>>>(
+        _expected: E,
+        found: Option<MaybeRef<'a, I::Token>>,
+        span: I::Span,
+    ) -> Self {
+        Self { span, found }
     }
 }
 
@@ -669,7 +676,9 @@ impl<'a, T, S, L> Rich<'a, T, S, L> {
 impl<'a, I: Input<'a>, L> Error<'a, I> for Rich<'a, I::Token, I::Span, L>
 where
     I::Token: PartialEq,
-    L: PartialEq,
+    L: PartialEq + std::fmt::Debug,
+    <I as input::Input<'a>>::Token: fmt::Debug,
+    <I as input::Input<'a>>::Span: fmt::Debug,
 {
     #[inline]
     fn expected_found<E: IntoIterator<Item = Option<MaybeRef<'a, I::Token>>>>(
@@ -794,7 +803,9 @@ where
 impl<'a, I: Input<'a>, L> LabelError<'a, I, L> for Rich<'a, I::Token, I::Span, L>
 where
     I::Token: PartialEq,
-    L: PartialEq,
+    L: PartialEq + std::fmt::Debug,
+    <I as input::Input<'a>>::Token: fmt::Debug,
+    <I as input::Input<'a>>::Span: fmt::Debug,
 {
     #[inline]
     fn label_with(&mut self, label: L) {

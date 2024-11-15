@@ -1459,6 +1459,7 @@ impl<'a, 'parse, I: Input<'a>, E: ParserExtra<'a, I>> InputRef<'a, 'parse, I, E>
         found: Option<MaybeRef<'a, I::Token>>,
         span: I::Span,
     ) {
+        println!("add_alt");
         // Prioritize errors before choosing whether to generate the alt (avoids unnecessary error creation)
         self.errors.alt = Some(match self.errors.alt.take() {
             Some(alt) => match alt.pos.into().cmp(&at.into()) {
@@ -1476,6 +1477,7 @@ impl<'a, 'parse, I: Input<'a>, E: ParserExtra<'a, I>> InputRef<'a, 'parse, I, E>
 
     #[inline]
     pub(crate) fn add_alt_err(&mut self, at: I::Offset, err: E::Error) {
+        println!("add_alt_err");
         // Prioritize errors
         self.errors.alt = Some(match self.errors.alt.take() {
             Some(alt) => match alt.pos.into().cmp(&at.into()) {

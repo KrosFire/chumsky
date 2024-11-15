@@ -22,16 +22,20 @@ fn parser<'a>() -> impl Parser<'a, &'a str, Expression, extra::Err<Rich<'a, char
             return Expression::Error;
         });
 
-    just('[')
-        .ignore_then(
-            number
-                .recover_with(via_parser(none_of([']']).map(|_| Expression::Error)))
-                .separated_by(just(',').recover_with(via_parser(none_of([']']).map(|_| ','))))
-                .collect::<Vec<Expression>>(),
-        )
-        .then_ignore(just(']').recover_with(via_parser(any().or_not().map(|_| ']'))))
-        .map(move |arr| Expression::Array(arr))
-        .or(number)
+    just('?').repeated().foldr(
+        just('[')
+            .ignore_then(
+                number
+                    .recover_with(via_parser(none_of([']']).map(|_| Expression::Error)))
+                    .separated_by(just(',').recover_with(via_parser(none_of([']']).map(|_| ','))))
+                    .collect::<Vec<Expression>>(),
+            )
+            .then_ignore(just(']').recover_with(via_parser(any().or_not().map(|_| ']'))))
+            .map(move |arr| Expression::Array(arr))
+            .then_ignore(just(';').or_not())
+            .foldl(just('-').then(number.recover_with(via_parser(any().map(|_| Expression::Error)))).repeated(), |acc, _| acc),
+        |_, exp| exp,
+    )
 }
 
 fn main() {

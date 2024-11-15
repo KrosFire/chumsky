@@ -1447,6 +1447,7 @@ impl<'a, 'parse, I: Input<'a>, E: ParserExtra<'a, I>> InputRef<'a, 'parse, I, E>
 
     #[inline]
     pub(crate) fn emit(&mut self, pos: I::Offset, error: E::Error) {
+        println!("secondary error added. Len before {:?}", self.errors.secondary.len());
         self.errors.secondary.push(Located::at(pos, error));
     }
 

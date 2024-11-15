@@ -172,7 +172,7 @@ where
             inp.span_since(inp.offset()),
         )
         .map_err(|e| {
-            inp.add_alt_err(inp.offset().offset, e);
+            // inp.add_alt_err(inp.offset().offset, e);
             ()
         })?;
 

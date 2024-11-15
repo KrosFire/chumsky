@@ -47,6 +47,7 @@ where
                 return Err(());
             }
         };
+        println!("emitting alt error at {:?}, alt pos {:?}", inp.offset.into(), alt.pos.into());
         inp.emit(inp.offset, alt.err);
         Ok(out)
     }

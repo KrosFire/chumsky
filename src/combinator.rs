@@ -171,7 +171,10 @@ where
             inp.ctx(),
             inp.span_since(inp.offset()),
         )
-        .map_err(|e| inp.add_alt_err(inp.offset, e))?;
+        .map_err(|e| {
+            inp.add_alt_err(inp.offset().offset, e);
+            ()
+        })?;
 
         Ok((A::make_iter(&self.parser, inp)?, cfg))
     }

@@ -132,7 +132,7 @@ impl<A: Clone, F: Clone, O> Clone for TryIterConfigure<A, F, O> {
 impl<'a, I, OA, E, A, F> ParserSealed<'a, I, (), E> for TryIterConfigure<A, F, OA>
 where
     A: ConfigIterParser<'a, I, OA, E>,
-    F: Fn(A::Config, &E::Context, I::Span) -> Result<A::Config, E::Error>,
+    F: Fn(A::Config, &E::Context) -> Result<A::Config, E::Error>,
     I: Input<'a>,
     E: ParserExtra<'a, I>,
 {
@@ -154,7 +154,7 @@ where
 impl<'a, I, O, E, A, F> IterParserSealed<'a, I, O, E> for TryIterConfigure<A, F, O>
 where
     A: ConfigIterParser<'a, I, O, E>,
-    F: Fn(A::Config, &E::Context, I::Span) -> Result<A::Config, E::Error>,
+    F: Fn(A::Config, &E::Context) -> Result<A::Config, E::Error>,
     I: Input<'a>,
     E: ParserExtra<'a, I>,
 {
@@ -169,10 +169,11 @@ where
         let cfg = (self.cfg)(
             A::Config::default(),
             inp.ctx(),
-            inp.span_since(inp.offset()),
+            // inp.span_since(inp.offset()),
         )
         .map_err(|e| {
             // inp.add_alt_err(inp.offset().offset, e);
+            println!("make_iter error");
             ()
         })?;
 

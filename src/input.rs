@@ -583,7 +583,6 @@ where
     unsafe fn span((cache, eoi): &mut Self::Cache, range: Range<&Self::Cursor>) -> Self::Span {
         let start = I::next_maybe(cache, &mut range.start.0.clone())
             .map(|tok| tok.borrow().1.start())
-            // .or_else(|| self.input.next_maybe(self.input.start()).1)
             .unwrap_or_else(|| eoi.start());
         let end = range.end.1.clone().unwrap_or_else(|| eoi.end());
         S::new(eoi.context(), start..end)
